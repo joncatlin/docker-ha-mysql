@@ -44,8 +44,9 @@ services:
   # This container waits for the mysql instances to start and then configures the cluster
   csc-mysql-shell:
     secrets:
-      - db_user_password
-      - db_user
+      - db_root_password
+#      - db_user_password
+#      - db_user
     env_file:
       - mysql-shell.env
     build:

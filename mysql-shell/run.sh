@@ -1,22 +1,12 @@
 #!/bin/bash
 set -e
 
-# For debug purposes only
-: ${ENV_SECRETS_DEBUG:=1}
-
 ################################################################################################################
 #
 # Convert Docker secrets to env vars so this script works
 #
 ################################################################################################################
 : ${ENV_SECRETS_DIR:=/run/secrets}
-
-env_secret_debug()
-{
-    if [ ! -z "$ENV_SECRETS_DEBUG" ]; then
-        echo -e "\033[1m$@\033[0m"
-    fi
-}
 
 # usage: env_secret_expand SECRET_NAME ENVIRONMENT_VARIABLE
 #    ie: env_secret_expand 'DB_USER_PASSWORD' 'MYSQL_USER'
@@ -25,40 +15,54 @@ env_secret_debug()
 #  name of the docker secret to use instead of the original value. For example:
 # XYZ_DB_PASSWORD={{DOCKER-SECRET:my-db.secret}}
 
-env_secret_expand() {
-    var="$1"
-	env_var="$2"
-    eval val=\$$var
-    if secret_name=$(expr match "$val" "{{DOCKER-SECRET:\([^}]\+\)}}$"); then
-        secret="${ENV_SECRETS_DIR}/${secret_name}"
-        env_secret_debug "Secret file for $env_var: $secret"
-        if [ -f "$secret" ]; then
-            val=$(cat "${secret}")
-            export "$env_var"="$val"
-            env_secret_debug "Expanded variable: $env_var=$val"
-        else
-            env_secret_debug "Secret file does not exist! $secret"
-        fi
-    fi
-}
-
-# env_secrets_expand() {
-#     for env_var in $(printenv | cut -f1 -d"=")
-#     do
-#         env_secret_expand $env_var
-#     done
-
-#     if [ ! -z "$ENV_SECRETS_DEBUG" ]; then
-#         echo -e "\n\033[1mExpanded environment variables\033[0m"
-#         printenv
+# env_secret_expand() {
+#     var="$1"
+# 	env_var="$2"
+#     eval val=\$$var
+#     echo "In env_secret_expand with $var and $env_var"
+#     if secret_name=$(expr match "$val" "{{DOCKER-SECRET:\([^}]\+\)}}$"); then
+#         secret="${ENV_SECRETS_DIR}/${secret_name}"
+#         env_secret_debug "Secret file for $env_var: $secret"
+#         if [ -f "$secret" ]; then
+#             val=$(cat "${secret}")
+#             export "$env_var"="$val"
+#             env_secret_debug "Expanded variable: $env_var=$val"
+#         else
+#             env_secret_debug "Secret file does not exist! $secret"
+#         fi
 #     fi
 # }
 
-#env_secrets_expand
-env_secret_expand db_user MYSQL_USER
-env_secret_expand db_user_password MYSQL_PASSWORD
+env_secret_expand() {
+    secret_name="$1"
+	env_var="$2"
+    eval val=\$$var
+    echo "In env_secret_expand with $secret_name and $env_var"
+#    if secret_name=$(expr match "$val" "{{DOCKER-SECRET:\([^}]\+\)}}$"); then
+        secret="${ENV_SECRETS_DIR}/${secret_name}"
+#        env_secret_debug "Secret file for $env_var: $secret"
+        if [ -f "$secret" ]; then
+            val=$(cat "${secret}")
+            export "$env_var"="$val"
+            echo "Expanded secret for variable: $env_var"
+        else
+            echo "Secret file does not exist for secret named $secret"
+        fi
+#    fi
+}
+
+#env_secret_expand db_user MYSQL_USER
+#env_secret_expand db_user_password MYSQL_PASSWORD
+env_secret_expand db_root_password MYSQL_PASSWORD
 
 
+# env_var1="MYSQL_USER"
+# secret_name1="db_user"
+# secret1="${ENV_SECRETS_DIR}/${secret_name1}"
+# val1=$(cat "${secret1}")
+# export "$env_var1"="$val1"
+
+# echo "Secret for $env_var1 is $val1"
 
 
 
