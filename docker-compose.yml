@@ -61,18 +61,19 @@ services:
       - mysql-server-2
       - mysql-server-3
       - csc-mysql-shell
-    restart: on-failure
     networks:
       - mysql-cluster
 
   # This is a GUI administration tool for the cluster
   adminer:
     image: adminer
-    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
     depends_on:
       - mysql-router
     ports:
-      - 8080:8080
+      - target: 8080
     networks:
       - mysql-cluster
 
