@@ -1,8 +1,12 @@
-version: '3'
+version: '3.4'
 
 services:
 
   mysql-server-1:
+    secrets:
+      - db_root_password
+      - db_user_password
+      - db_user
     env_file:
       - mysql-server.env
     image: mysql/mysql-server:8.0.17
@@ -12,6 +16,10 @@ services:
     hostname: mysql-server-1
 
   mysql-server-2:
+    secrets:
+      - db_root_password
+      - db_user_password
+      - db_user
     env_file:
       - mysql-server.env
     image: mysql/mysql-server:8.0.17
@@ -21,6 +29,10 @@ services:
     hostname: mysql-server-2
 
   mysql-server-3:
+    secrets:
+      - db_root_password
+      - db_user_password
+      - db_user
     env_file:
       - mysql-server.env
     image: mysql/mysql-server:8.0.17
@@ -31,6 +43,9 @@ services:
 
   # This container waits for the mysql instances to start and then configures the cluster
   csc-mysql-shell:
+    secrets:
+      - db_user_password
+      - db_user
     env_file:
       - mysql-shell.env
     build:
@@ -51,6 +66,9 @@ services:
   # This container acts as the central point for clients to connect to. It distributes 
   # the requests to cluster members
   mysql-router:
+    secrets:
+      - db_user_password
+      - db_user
     env_file:
       - mysql-router.env
     image: mysql/mysql-router:8.0.16
@@ -77,14 +95,14 @@ services:
     networks:
       - mysql-cluster
 
-  # dbwebapp:
-  #   env_file:
-  #     - dbwebapp.env
-  #   image: neumayer/dbwebapp
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - mysql-router
+secrets:
+  db_root_password:
+    external: true
+  db_user_password:
+    external: true
+  db_user:
+    external: true
+
 
 networks:
   mysql-cluster:

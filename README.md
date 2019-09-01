@@ -12,8 +12,30 @@ Some modifications were necessary to get the containers to run in the swarm. The
 ## How To Build
 In order to build the image for the container that runs the scripts use the following command.
 ```
-$ docker-compose build
+docker-compose build
 ```
+## Use of Docker Secrets
+To keep the user and passwords secure in a docker swarm this repo uses secrets for the following mysql env variables.
+
+- MYSQL_USER
+- MYSQL_ROOT_PASSWORD
+- MYSQL_PASSWORD
+
+To create the secrets run the following code from a management node in the swarm.
+```
+openssl rand -base64 12 | docker secret create db_root_password -
+openssl rand -base64 12 | docker secret create db_user_password -
+openssl rand -base64 12 | docker secret create db_user -
+```
+
+Or if you want to specify the values for the secrets
+```
+echo '<put your MYSQL_ROOT_PASSWORD here>' | docker secret create db_root_password -
+echo '<put your MYSQL_PASSWORD here>' | docker secret create db_user_password -
+echo '<put your MYSQL_USER here>' | docker secret create db_user -
+```
+
+
 
 ## How to Use Adminer
 Connect using a browser to the swarm on port 8080.
